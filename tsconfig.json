@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "moduleResolution": "node",
+    "strict": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "preserveConstEnums": true,
+    "declaration": false,
+    "sourceMap": false,
+    "outDir": "server",
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "typeRoots": ["./server/types"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "server/**/*"]
+}
