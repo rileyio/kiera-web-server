@@ -29,7 +29,6 @@ export class Server {
     this.app = express()
     this.appPath = path.join(__dirname, '../production-app/')
     this.https = {
-      ca: process.env.APP_HTTPS_CA ? fs.readFileSync(path.join(process.env.APP_HTTPS_CA as string)) : undefined,
       key: fs.readFileSync(path.join(process.env.APP_HTTPS_KEY as string)),
       cert: fs.readFileSync(path.join(process.env.APP_HTTPS_CRT as string))
     }
@@ -188,7 +187,7 @@ export class Server {
     console.log('checkAuth', request.isAuthenticated())
     if (request.isAuthenticated()) {
       res.cookie('kiera-discord-id', request.user.userID)
-      res.cookie('kiera-webToken', encodeURIComponent(request.user.session))
+      res.cookie('kiera-sessionToken', encodeURIComponent(request.user.session))
     }
     // res.send('not logged in :(')
     return next()
@@ -196,7 +195,7 @@ export class Server {
 
   private forceLogout(req: express.Request, res: express.Response, next: express.NextFunction) {
     res.cookie('kiera-discord-id', null)
-    res.cookie('kiera-webToken', null)
+    res.cookie('kiera-sessionToken', null)
     return next()
   }
 
