@@ -17,9 +17,19 @@ import * as DiscordStrategy from 'passport-discord'
 import { RequestExtended } from './objects/server'
 
 export class Server {
+  protected readonly isHTTPSSet =
+    process.env.APP_HTTPS_KEY && process.env.APP_HTTPS_CRT
+      ? fs.existsSync(path.join(process.env.APP_HTTPS_KEY as string)) && fs.readFileSync(path.join(process.env.APP_HTTPS_CRT as string))
+      : false
+  protected readonly https = this.isHTTPSSet
+    ? {
+        key: fs.readFileSync(path.join(process.env.APP_HTTPS_KEY as string)),
+        certificate: fs.readFileSync(path.join(process.env.APP_HTTPS_CRT as string))
+      }
+    : {}
+
   public app = express()
-  public appPath: string
-  public https: { ca?: Buffer; key: Buffer; cert: Buffer }
+  public appPath: string = process.env.APP_PATH
   public discordScopes: Array<string> = []
   public redisClient: redis.RedisClient
   public redisStore: connectRedis.RedisStore
@@ -28,10 +38,6 @@ export class Server {
   constructor() {
     this.app = express()
     this.appPath = path.join(__dirname, '../production-app/')
-    this.https = {
-      key: fs.readFileSync(path.join(process.env.APP_HTTPS_KEY as string)),
-      cert: fs.readFileSync(path.join(process.env.APP_HTTPS_CRT as string))
-    }
     this.discordScopes = ['identify', 'guilds']
 
     // Sessions
