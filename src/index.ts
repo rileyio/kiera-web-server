@@ -5,6 +5,7 @@ import Axios from 'axios'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as redis from 'redis'
+import * as http from 'http'
 import * as https from 'https'
 import * as helmet from 'helmet'
 import * as express from 'express'
@@ -33,7 +34,7 @@ export class Server {
   public discordScopes: Array<string> = []
   public redisClient: redis.RedisClient
   public redisStore: connectRedis.RedisStore
-  public httpsServer: https.Server
+  public server: https.Server | http.Server
 
   constructor() {
     this.app = express()
@@ -144,7 +145,7 @@ export class Server {
       else res.status(200).sendFile(path.join(this.appPath, 'index.html'))
     })
 
-    this.httpsServer = https.createServer(this.https, this.app)
+    this.server = this.isHTTPSSet ? https.createServer(this.https, this.app) : http.createServer(this.app)
   }
 
   start() {
@@ -152,7 +153,7 @@ export class Server {
   }
 
   listen() {
-    this.httpsServer.listen(8235, () => {
+    this.server.listen(8235, () => {
       console.log(`kiera-web listening`)
     })
   }
@@ -220,11 +221,12 @@ export class Server {
       headers: {
         secret: process.env.BOT_WEB_APP_SERVER_SECRET
       },
-      httpsAgent: process.env.APP_DEV_MODE
-        ? new https.Agent({
-            rejectUnauthorized: false
-          })
-        : undefined
+      httpsAgent:
+        process.env.APP_DEV_MODE && this.isHTTPSSet
+          ? new https.Agent({
+              rejectUnauthorized: false
+            })
+          : undefined
     })
 
     if (resp.status === 200) return resp.data
