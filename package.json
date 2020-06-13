@@ -4,9 +4,9 @@
   "author": "Emma <RileyIO>",
   "license": "MIT",
   "scripts": {
-    "server:build": "tsc",
-    "server:dev": "tsc -w",
-    "server:start": "DEBUG='kiera-web-server:*' node ./server/start.js"
+    "build": "tsc",
+    "dev": "tsc -w",
+    "start": "DEBUG='kiera-web-server:*' node ./server/start.js"
   },
   "dependencies": {
     "axios": "^0.19.2",
