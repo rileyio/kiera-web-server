@@ -210,14 +210,7 @@ export class Server {
     console.log('Sending login to Kiera-Bot API...')
     const resp = await Axios(`${process.env.BOT_HOST}/web/oauth`, {
       method: 'POST',
-      data: {
-        id: profile.id,
-        username: profile.username,
-        discriminator: profile.discriminator,
-        avatar: profile.avatar,
-        fetchedAt: profile.fetchedAt,
-        locale: profile.locale
-      },
+      data: { id: profile.id },
       headers: {
         secret: process.env.BOT_WEB_APP_SERVER_SECRET
       },
