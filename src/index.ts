@@ -38,7 +38,7 @@ export class Server {
 
   constructor() {
     this.app = express()
-    this.appPath = path.join(__dirname, '../production-app/')
+    this.appPath = path.resolve(this.appPath)
     this.discordScopes = ['identify', 'guilds']
 
     // Sessions
@@ -85,7 +85,7 @@ export class Server {
     })
 
     // Static Assets
-    this.app.use('/assets', express.static(path.join(__dirname, '../production-app')))
+    this.app.use('/assets', express.static(this.appPath))
 
     ////////////////////////////////////////
     // Web Server Routed ///////////////////
@@ -142,7 +142,10 @@ export class Server {
      */
     this.app.get('/', this.checkAuth, (req, res) => {
       if (process.env.APP_REDIRECT) res.redirect(process.env.APP_REDIRECT)
-      else res.status(200).sendFile(path.join(this.appPath, 'index.html'))
+      else {
+        console.log(path.join(this.appPath, 'index.html'))
+        res.status(200).sendFile(path.join(this.appPath, 'index.html'))
+      }
     })
 
     this.server = this.isHTTPSSet ? https.createServer(this.https, this.app) : http.createServer(this.app)
