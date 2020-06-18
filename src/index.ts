@@ -31,6 +31,7 @@ export class Server {
 
   public app = express()
   public appPath: string = process.env.APP_PATH
+  public basePath: string = process.env.APP_SERVER_BASE
   public discordScopes: Array<string> = []
   public redisClient: redis.RedisClient
   public redisStore: connectRedis.RedisStore
@@ -40,6 +41,8 @@ export class Server {
     this.app = express()
     this.appPath = path.resolve(this.appPath)
     this.discordScopes = ['identify', 'guilds']
+
+    if (process.env.APP_DEV_MODE) process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
     // Sessions
     this.redisStore = connectRedis(expressSession)
@@ -84,9 +87,6 @@ export class Server {
       next()
     })
 
-    // Static Assets
-    this.app.use('/assets', express.static(this.appPath))
-
     ////////////////////////////////////////
     // Web Server Routed ///////////////////
     ////////////////////////////////////////
@@ -96,14 +96,14 @@ export class Server {
      * Route: /callback
      */
     this.app.get(
-      '/callback',
+      `${this.basePath}/callback`,
       passport.authenticate('discord', {
-        successRedirect: '/',
+        successRedirect: '/app',
         failureRedirect: '/'
       }),
       (req, res) => {
         console.log('/callback called')
-        res.redirect('/info')
+        res.redirect(`${this.basePath}/info`)
       }
     )
 
@@ -111,7 +111,7 @@ export class Server {
      * [GET] Manual Logout - Logout redirected to or requested by user
      * Route: /logout
      */
-    this.app.get('/logout', this.forceLogout, (req, res, next) => {
+    this.app.get(`${this.basePath}/logout`, this.forceLogout, (req, res, next) => {
       ;(req as any).logout()
       res.redirect('/')
     })
@@ -121,7 +121,7 @@ export class Server {
      * Route: /login
      */
     this.app.get(
-      '/login',
+      `${this.basePath}/login`,
       passport.authenticate('discord', {
         scope: this.discordScopes
       }),
@@ -132,7 +132,7 @@ export class Server {
      * [GET] Session Info - Testing
      * Route: /info
      */
-    this.app.get('/info', this.checkAuth, (req: express.Request, res: express.Response) => {
+    this.app.get(`${this.basePath}/info`, this.checkAuth, (req: express.Request, res: express.Response) => {
       res.json((req as any).user)
     })
 
@@ -140,12 +140,8 @@ export class Server {
      * [GET] Index
      * Route: /info
      */
-    this.app.get('/', this.checkAuth, (req, res) => {
-      if (process.env.APP_REDIRECT) res.redirect(process.env.APP_REDIRECT)
-      else {
-        console.log(path.join(this.appPath, 'index.html'))
-        res.status(200).sendFile(path.join(this.appPath, 'index.html'))
-      }
+    this.app.get(`${this.basePath}/`, this.checkAuth, (req, res) => {
+      res.redirect(process.env.APP_REDIRECT)
     })
 
     this.server = this.isHTTPSSet ? https.createServer(this.https, this.app) : http.createServer(this.app)
