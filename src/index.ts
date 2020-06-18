@@ -19,6 +19,8 @@ import { RequestExtended } from './objects/server'
 export class Server {
   public readonly isHTTPSSet =
     process.env.API_HTTPS_KEY && process.env.API_HTTPS_CRT ? fs.existsSync(process.env.API_HTTPS_KEY as string) && fs.readFileSync(process.env.API_HTTPS_CRT as string) : false
+  public server: https.Server | http.Server
+
   protected readonly https = this.isHTTPSSet
     ? {
         key: fs.readFileSync(process.env.API_HTTPS_KEY as string),
@@ -26,12 +28,12 @@ export class Server {
       }
     : {}
 
-  public app = express()
-  public basePath: string = process.env.API_SERVER_BASE
-  public discordScopes: Array<string> = []
-  public redisClient: redis.RedisClient
-  public redisStore: connectRedis.RedisStore
-  public server: https.Server | http.Server
+  app = express()
+
+  private basePath: string = process.env.API_SERVER_BASE
+  private discordScopes: Array<string> = []
+  private redisClient: redis.RedisClient
+  private redisStore: connectRedis.RedisStore
 
   constructor() {
     this.app = express()
@@ -51,11 +53,11 @@ export class Server {
 
     this.app.use(
       expressSession({
-        secret: process.env.API_SERVER_SECRET,
         store: new this.redisStore({
           client: this.redisClient
         }),
-        resave: true,
+        secret: process.env.API_SERVER_SECRET,
+        resave: false,
         saveUninitialized: true
       })
     )
