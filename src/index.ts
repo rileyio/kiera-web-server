@@ -27,8 +27,7 @@ export class Server {
     : {}
 
   public app = express()
-  public appPath: string = process.env.APP_PATH
-  public basePath: string = process.env.APP_SERVER_BASE
+  public basePath: string = process.env.API_SERVER_BASE
   public discordScopes: Array<string> = []
   public redisClient: redis.RedisClient
   public redisStore: connectRedis.RedisStore
@@ -36,10 +35,9 @@ export class Server {
 
   constructor() {
     this.app = express()
-    this.appPath = this.appPath
     this.discordScopes = ['identify', 'guilds']
 
-    if (process.env.APP_DEV_MODE) process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    if (process.env.API_DEV_MODE) process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
     // Sessions
     this.redisStore = connectRedis(expressSession)
@@ -53,7 +51,7 @@ export class Server {
 
     this.app.use(
       expressSession({
-        secret: process.env.APP_SERVER_SECRET,
+        secret: process.env.API_SERVER_SECRET,
         store: new this.redisStore({
           client: this.redisClient
         }),
@@ -138,7 +136,7 @@ export class Server {
      * Route: /info
      */
     this.app.get(`${this.basePath}/`, this.checkAuth, (req, res) => {
-      res.redirect(process.env.APP_REDIRECT)
+      res.redirect(process.env.API_REDIRECT)
     })
 
     this.server = this.isHTTPSSet ? https.createServer(this.https, this.app) : http.createServer(this.app)
@@ -211,7 +209,7 @@ export class Server {
         secret: process.env.BOT_WEB_APP_SERVER_SECRET
       },
       httpsAgent:
-        process.env.APP_DEV_MODE && this.isHTTPSSet
+        process.env.API_DEV_MODE && this.isHTTPSSet
           ? new https.Agent({
               rejectUnauthorized: false
             })
