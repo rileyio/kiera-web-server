@@ -17,12 +17,12 @@ import * as DiscordStrategy from 'passport-discord'
 import { RequestExtended } from './objects/server'
 
 export class Server {
-  protected readonly isHTTPSSet =
-    process.env.APP_HTTPS_KEY && process.env.APP_HTTPS_CRT ? fs.existsSync(process.env.APP_HTTPS_KEY as string) && fs.readFileSync(process.env.APP_HTTPS_CRT as string) : false
+  public readonly isHTTPSSet =
+    process.env.API_HTTPS_KEY && process.env.API_HTTPS_CRT ? fs.existsSync(process.env.API_HTTPS_KEY as string) && fs.readFileSync(process.env.API_HTTPS_CRT as string) : false
   protected readonly https = this.isHTTPSSet
     ? {
-        key: fs.readFileSync(process.env.APP_HTTPS_KEY as string),
-        certificate: fs.readFileSync(process.env.APP_HTTPS_CRT as string)
+        key: fs.readFileSync(process.env.API_HTTPS_KEY as string),
+        certificate: fs.readFileSync(process.env.API_HTTPS_CRT as string)
       }
     : {}
 
@@ -53,7 +53,7 @@ export class Server {
 
     this.app.use(
       expressSession({
-        secret: 'mySecretKey',
+        secret: process.env.APP_SERVER_SECRET,
         store: new this.redisStore({
           client: this.redisClient
         }),
@@ -150,7 +150,7 @@ export class Server {
 
   listen() {
     this.server.listen(8235, () => {
-      console.log(`kiera-web listening`)
+      console.log(`kiera-web listening`, this.isHTTPSSet ? 'https' : 'http')
     })
   }
 
