@@ -3,7 +3,6 @@ require('dotenv').config()
 import Axios from 'axios'
 
 import * as fs from 'fs'
-import * as path from 'path'
 import * as redis from 'redis'
 import * as http from 'http'
 import * as https from 'https'
@@ -19,13 +18,11 @@ import { RequestExtended } from './objects/server'
 
 export class Server {
   protected readonly isHTTPSSet =
-    process.env.APP_HTTPS_KEY && process.env.APP_HTTPS_CRT
-      ? fs.existsSync(path.join(process.env.APP_HTTPS_KEY as string)) && fs.readFileSync(path.join(process.env.APP_HTTPS_CRT as string))
-      : false
+    process.env.APP_HTTPS_KEY && process.env.APP_HTTPS_CRT ? fs.existsSync(process.env.APP_HTTPS_KEY as string) && fs.readFileSync(process.env.APP_HTTPS_CRT as string) : false
   protected readonly https = this.isHTTPSSet
     ? {
-        key: fs.readFileSync(path.join(process.env.APP_HTTPS_KEY as string)),
-        certificate: fs.readFileSync(path.join(process.env.APP_HTTPS_CRT as string))
+        key: fs.readFileSync(process.env.APP_HTTPS_KEY as string),
+        certificate: fs.readFileSync(process.env.APP_HTTPS_CRT as string)
       }
     : {}
 
@@ -39,7 +36,7 @@ export class Server {
 
   constructor() {
     this.app = express()
-    this.appPath = path.resolve(this.appPath)
+    this.appPath = this.appPath
     this.discordScopes = ['identify', 'guilds']
 
     if (process.env.APP_DEV_MODE) process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
